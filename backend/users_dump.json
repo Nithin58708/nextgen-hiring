@@ -1,0 +1,38 @@
+[
+  {
+    "id": 7,
+    "username": "Karthi",
+    "email": "karthi@nextgen.com",
+    "password": "$2b$10$xYHSBXINm0Ue27BMNnKMLetWltkoKEm7Abt2TS9sakKkXGNXq2dSi",
+    "role": "job_finder",
+    "created_at": "2026-03-21T04:11:11.554Z",
+    "is_active": true
+  },
+  {
+    "id": 2,
+    "username": "Mani",
+    "email": "mani@nextgen.com",
+    "password": "$2b$10$Kn.BTeb3kWGgtZZzPAN4n.xw0TZex9FmfLqzivg5jsgyUeuyrp.bG",
+    "role": "job_poster",
+    "created_at": "2026-03-18T11:03:18.447Z",
+    "is_active": true
+  },
+  {
+    "id": 3,
+    "username": "Nithin",
+    "email": "nithin58708@gmail.com",
+    "password": "$2b$10$ImhMYaZs7F1JqlnPBXg8HuiIISt8W2qOJ5UaRRYkS6nAVlJSftG/S",
+    "role": "admin",
+    "created_at": "2026-03-18T11:03:18.528Z",
+    "is_active": true
+  },
+  {
+    "id": 97,
+    "username": "TestStudent",
+    "email": "teststudent@test.com",
+    "password": "$2b$10$XRs9M0mdaIcxlM2xOLxR2OFQuyKXTIe0CUmtRtkgZ12saH0.n2rvK",
+    "role": "job_finder",
+    "created_at": "2026-03-26T15:22:08.077Z",
+    "is_active": true
+  }
+]

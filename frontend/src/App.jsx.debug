@@ -1,0 +1,12 @@
+import React from 'react';
+
+function App() {
+  return (
+    <div style={{ padding: '20px', backgroundColor: 'navy', color: 'white', minHeight: '100vh' }}>
+      <h1>NextGen Hiring - App Level Debug</h1>
+      <p>If you see this, App is rendering.</p>
+    </div>
+  );
+}
+
+export default App;

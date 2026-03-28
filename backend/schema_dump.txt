@@ -1,0 +1,124 @@
+
+TABLE: admin_notifications
+  - id
+  - type
+  - message
+  - is_read
+  - created_at
+
+TABLE: assessment_attempts
+  - id
+  - finder_id
+  - assessment_id
+  - answers
+  - score
+  - tab_switches
+  - feedback
+  - submitted_at
+
+TABLE: assessment_results
+  - id
+  - assessment_id
+  - user_id
+  - answers
+  - score
+  - feedback
+  - strong_areas
+  - weak_areas
+  - submitted_at
+
+TABLE: assessments
+  - id
+  - job_role
+  - title
+  - questions
+  - time_limit_minutes
+
+TABLE: job_applications
+  - id
+  - job_id
+  - finder_id
+  - poster_id
+  - cover_letter
+  - status
+  - applied_at
+  - updated_at
+
+TABLE: job_finder_profiles
+  - id
+  - user_id
+  - resume_text
+  - extracted_skills
+  - resume_filename
+  - updated_at
+  - weak_areas
+  - last_test_date
+  - primary_language
+
+TABLE: job_matches
+  - id
+  - finder_id
+  - job_id
+  - match_score
+  - reasoning
+  - is_external
+  - external_job_data
+  - matched_at
+
+TABLE: job_poster_profiles
+  - id
+  - user_id
+  - company_name
+  - company_website
+  - linkedin_profile
+  - updated_at
+
+TABLE: jobs
+  - id
+  - poster_id
+  - job_role
+  - company_name
+  - job_description
+  - salary_package
+  - required_skills
+  - status
+  - created_at
+
+TABLE: resume_suggestions
+  - id
+  - finder_id
+  - job_id
+  - skills_to_add
+  - keywords_to_improve
+  - areas_to_strengthen
+  - created_at
+
+TABLE: resumes
+  - id
+  - user_id
+  - filename
+  - original_name
+  - raw_text
+  - uploaded_at
+
+TABLE: suggestions
+  - id
+  - user_id
+  - job_id
+  - roadmap
+  - created_at
+
+TABLE: user_skills
+  - id
+  - user_id
+  - skill_name
+  - skill_type
+  - created_at
+
+TABLE: users
+  - id
+  - username
+  - email
+  - password
+  - role
+  - created_at

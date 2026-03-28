@@ -1,0 +1,42 @@
+TEST 1.1 Landing Page: [FAIL]
+TEST 1.2 Finder Login: [FAIL] Request failed with status code 401
+TEST 2.1 Resume Upload API: [FAIL]
+TEST 2.2 Profile Saved to DB: [FAIL]
+TEST 3.2 Poster Sees Jobs: [FAIL]
+TEST 3.3 Admin Sees Pending: [FAIL]
+TEST 3.5 Finder Sees Approved: [FAIL]
+TEST 4.1 Match Score API: [FAIL]
+TEST 4.2 Match Saved to DB: [FAIL]
+TEST 5.1 Suggestions API: [FAIL] Request failed with status code 403
+TEST 6.1 Generate Questions: [FAIL]
+TEST 6.5 Submit Test: [FAIL]
+TEST 6.6 AI Feedback: [FAIL]
+TEST 7.1 Real Analytics: [FAIL]
+TEST 7.4 Edit User: [FAIL] Request failed with status code 500
+TEST 9.1 Apply for Job: [FAIL] {"error":"Invalid token: jwt malformed"}
+TEST 9.2 No Duplicate Apply: [FAIL]
+TEST 9.3 Finder Applications: [FAIL]
+TEST 9.4 Poster Sees Applicants: [FAIL]
+TEST 9.5 Status Update: [FAIL]
+TEST 8.1 Full Hiring Cycle: [FAIL]
+1.1 Landing Page             : [FAIL]
+1.2 Finder Login             : [FAIL] Request failed with status code 401
+2.1 Resume Upload API        : [FAIL]
+2.2 Profile Saved to DB      : [FAIL]
+3.2 Poster Sees Jobs         : [FAIL]
+3.3 Admin Sees Pending       : [FAIL]
+3.5 Finder Sees Approved     : [FAIL]
+4.1 Match Score API          : [FAIL]
+4.2 Match Saved to DB        : [FAIL]
+5.1 Suggestions API          : [FAIL] Request failed with status code 403
+6.1 Generate Questions       : [FAIL]
+6.5 Submit Test              : [FAIL]
+6.6 AI Feedback              : [FAIL]
+7.1 Real Analytics           : [FAIL]
+7.4 Edit User                : [FAIL] Request failed with status code 500
+8.1 Full Hiring Cycle        : [FAIL]
+9.1 Apply for Job            : [FAIL] {"error":"Invalid token: jwt malformed"}
+9.2 No Duplicate Apply       : [FAIL]
+9.3 Finder Applications      : [FAIL]
+9.4 Poster Sees Applicants   : [FAIL]
+9.5 Status Update            : [FAIL]

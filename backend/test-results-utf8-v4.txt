@@ -1,0 +1,128 @@
+﻿Starting E2E Test Suite...
+
+--- SUITE 1: AUTHENTICATION ---
+TEST 1.1 Landing Page: [FAIL] 
+TEST 1.2 Finder Login: [FAIL] Request failed with status code 400
+TEST 1.3 Poster Login: [PASS] 
+TEST 1.4 Admin Login: [PASS] 
+TEST 1.5 Wrong Password: [PASS] 
+TEST 1.6 Route Protection: [PASS] 
+
+--- SUITE 2: RESUME INTELLIGENCE ---
+TEST 2.1 Resume Upload API: [FAIL] 
+TEST 2.2 Profile Saved to DB: [FAIL] 
+TEST 2.3 Frontend Skills View: [PASS] 
+
+--- SUITE 3: JOB MANAGEMENT ---
+TEST 3.1 Create Job: [PASS] 
+TEST 3.2 Poster Sees Jobs: [PASS] 
+TEST 3.3 Admin Sees Pending: [PASS] 
+TEST 3.4 Admin Approves: [PASS] 
+TEST 3.5 Finder Sees Approved: [FAIL] 
+TEST 3.6 Internal+External: [PASS] 
+
+--- SUITE 4: AI MATCHING ---
+TEST 4.1 Match Score API: [FAIL] 
+TEST 4.2 Match Saved to DB: [FAIL] 
+TEST 4.3 Frontend Match Page: [PASS] 
+
+--- SUITE 5: RESUME SUGGESTIONS ---
+TEST 5.1 Suggestions API: [FAIL] Token is not valid
+TEST 5.2 Frontend Page: [PASS] 
+
+--- SUITE 6: MOCK TEST ---
+TEST 6.1 Generate Questions: [FAIL] 
+TEST 6.2 Proctoring Bar: [PASS] 
+TEST 6.3 Tab Detection: [PASS] 
+TEST 6.4 Copy-Paste Block: [PASS] 
+TEST 6.5 Submit Test: [FAIL] 
+TEST 6.6 AI Feedback: [FAIL] 
+TEST 6.7 Result Page: [PASS] 
+
+--- SUITE 7: ADMIN DASHBOARD ---
+TEST 7.1 Real Analytics: [PASS] 
+TEST 7.2 All Jobs View: [PASS] 
+TEST 7.3 User Management: [PASS] 
+TEST 7.4 Edit User: [FAIL] Request failed with status code 500
+TEST 7.5 Frontend Dashboard: [PASS] 
+
+--- SUITE 9: JOB APPLICATIONS ---
+DEBUG: jobId is 3
+TEST 9.1 Apply for Job: [FAIL] {"message":"Token is not valid"}
+TEST 9.2 No Duplicate Apply: [FAIL] 
+TEST 9.3 Finder Applications: [FAIL] 
+TEST 9.4 Poster Sees Applicants: [FAIL] 
+TEST 9.5 Status Update: [FAIL] 
+TEST 9.6 Apply Button UI: [PASS] 
+TEST 9.7 My Applications Page: [PASS] 
+TEST 9.8 Applicant Management: [PASS] 
+
+--- SUITE 8: COMPLETE FLOW ---
+TEST 8.1 Full Hiring Cycle: [FAIL] 
+
+================================================
+NEXTGEN HIRING - COMPLETE TEST REPORT
+================================================
+TEST SUITE 1 - AUTHENTICATION
+  1.1 Landing Page             : [FAIL] 
+  1.2 Finder Login             : [FAIL] Request failed with status code 400
+  1.3 Poster Login             : [PASS] 
+  1.4 Admin Login              : [PASS] 
+  1.5 Wrong Password           : [PASS] 
+  1.6 Route Protection         : [PASS] 
+
+TEST SUITE 2 - RESUME INTELLIGENCE
+  2.1 Resume Upload API        : [FAIL] 
+  2.2 Profile Saved to DB      : [FAIL] 
+  2.3 Frontend Skills View     : [PASS] 
+
+TEST SUITE 3 - JOB MANAGEMENT
+  3.1 Create Job               : [PASS] 
+  3.2 Poster Sees Jobs         : [PASS] 
+  3.3 Admin Sees Pending       : [PASS] 
+  3.4 Admin Approves           : [PASS] 
+  3.5 Finder Sees Approved     : [FAIL] 
+  3.6 Internal+External        : [PASS] 
+
+TEST SUITE 4 - AI MATCHING
+  4.1 Match Score API          : [FAIL] 
+  4.2 Match Saved to DB        : [FAIL] 
+  4.3 Frontend Match Page      : [PASS] 
+
+TEST SUITE 5 - RESUME SUGGESTIONS
+  5.1 Suggestions API          : [FAIL] Token is not valid
+  5.2 Frontend Page            : [PASS] 
+
+TEST SUITE 6 - MOCK TEST
+  6.1 Generate Questions       : [FAIL] 
+  6.2 Proctoring Bar           : [PASS] 
+  6.3 Tab Detection            : [PASS] 
+  6.4 Copy-Paste Block         : [PASS] 
+  6.5 Submit Test              : [FAIL] 
+  6.6 AI Feedback              : [FAIL] 
+  6.7 Result Page              : [PASS] 
+
+TEST SUITE 7 - ADMIN DASHBOARD
+  7.1 Real Analytics           : [PASS] 
+  7.2 All Jobs View            : [PASS] 
+  7.3 User Management          : [PASS] 
+  7.4 Edit User                : [FAIL] Request failed with status code 500
+  7.5 Frontend Dashboard       : [PASS] 
+
+TEST SUITE 8 - COMPLETE FLOW
+  8.1 Full Hiring Cycle        : [FAIL] 
+
+TEST SUITE 9 - JOB APPLICATIONS
+  9.1 Apply for Job            : [FAIL] {"message":"Token is not valid"}
+  9.2 No Duplicate Apply       : [FAIL] 
+  9.3 Finder Applications      : [FAIL] 
+  9.4 Poster Sees Applicants   : [FAIL] 
+  9.5 Status Update            : [FAIL] 
+  9.6 Apply Button UI          : [PASS] 
+  9.7 My Applications Page     : [PASS] 
+  9.8 Applicant Management     : [PASS] 
+
+TOTAL: 23/41 PASSED
+FAILED TESTS: 1.1 Landing Page, 1.2 Finder Login, 2.1 Resume Upload API, 2.2 Profile Saved to DB, 3.5 Finder Sees Approved, 4.1 Match Score API, 4.2 Match Saved to DB, 5.1 Suggestions API, 6.1 Generate Questions, 6.5 Submit Test, 6.6 AI Feedback, 7.4 Edit User, 8.1 Full Hiring Cycle, 9.1 Apply for Job, 9.2 No Duplicate Apply, 9.3 Finder Applications, 9.4 Poster Sees Applicants, 9.5 Status Update
+PLATFORM STATUS: NEEDS FIXES
+================================================

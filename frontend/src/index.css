@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-dark: #0F172A;
+  --color-dark-card: #1E293B;
+  --color-primary: #7C3AED;
+  --color-secondary: #3B82F6;
+  --color-muted: #94A3B8;
+}
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  background-color: #0F172A;
+  color: white;
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    backdrop-filter: blur(12px);
+  }
+  .stat-card {
+    position: relative;
+    background: #1E293B;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 1rem;
+    padding: 2rem;
+    overflow: hidden;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    color: #94A3B8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+  }
+  .sidebar-item:hover {
+    color: #3B82F6;
+    background: rgba(59,130,246,0.1);
+  }
+  .sidebar-item-active {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border: 1px solid rgba(124,58,237,0.2);
+    background: rgba(124,58,237,0.1);
+    color: #7C3AED;
+    text-decoration: none;
+  }
+  .stat-accent {
+    position: absolute;
+    top: -2.5rem;
+    right: -2.5rem;
+    width: 10rem;
+    height: 10rem;
+    background: #7C3AED;
+    border-radius: 9999px;
+    filter: blur(3rem);
+  }
+  .animate-page-enter {
+    animation: pageEnter 0.4s ease-out;
+  }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
