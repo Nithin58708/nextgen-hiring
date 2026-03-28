@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { callOpenRouter } = require('../utils/aiHelper');
 
 router.post('/generate', auth, async (req,res) => {
   try {
@@ -77,16 +77,10 @@ Return EXACTLY a JSON array of 20 objects:
 
 Return ONLY the JSON array. No markdown. No backticks. No explanation.`;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-    
     let result;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        result = await Promise.race([
-          model.generateContent(prompt),
-          new Promise((_,rej)=>setTimeout(()=>rej(new Error('Gemini timeout')),30000))
-        ]);
+        result = await callOpenRouter("Return ONLY a JSON array.", prompt);
         break;
       } catch (retryErr) {
         console.log(`Gemini attempt ${attempt+1} failed:`, retryErr.message);
@@ -130,8 +124,7 @@ Return ONLY the JSON array. No markdown. No backticks. No explanation.`;
 
     let questions;
     try {
-      questions = JSON.parse(
-        result.response.text().replace(/```json/g,'').replace(/```/g,'').trim());
+      questions = typeof result === 'string' ? JSON.parse(result.replace(/```json/g,'').replace(/```/g,'').trim()) : result;
     } catch(parseErr) {
       console.log('Failed to parse Gemini output, using fallback');
       const fallbackQ = [];
@@ -228,17 +221,12 @@ router.post('/:id/submit', auth, async (req,res) => {
     };
 
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-      
       let r;
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
-          r = await Promise.race([
-            model.generateContent(
-              'Student scored '+score+'% on '+assessRes.rows[0].job_role+' test.\n'+
-              'Wrong categories: '+JSON.stringify(weakAreas)+'\n'+
-              'Return ONLY valid JSON no markdown:\n'+
+          const userPrompt = 'Student scored '+score+'% on '+assessRes.rows[0].job_role+' test.\n'+
+              'Wrong categories: '+JSON.stringify(weakAreas);
+          const systemPrompt = 'Return ONLY valid JSON no markdown:\n'+
               '{"overallGrade":"'+feedback.overallGrade+'",'+
               '"scoreInterpretation":"2 sentence assessment of performance",'+
               '"strongAreas":["categories they did well in"],'+
@@ -247,10 +235,9 @@ router.post('/:id/submit', auth, async (req,res) => {
               '"interviewTips":["tip1","tip2","tip3","tip4","tip5"],'+
               '"recommendedCourses":[{"skill":"name","courseName":"name","platform":"Udemy","link":"https://udemy.com","priority":"High"}],'+
               '"feedbackSummary":"3-4 sentence overall feedback",'+
-              '"nextSteps":["step1","step2","step3"]}'
-            ),
-            new Promise((_,rej)=>setTimeout(()=>rej(new Error('t')),20000))
-          ]);
+              '"nextSteps":["step1","step2","step3"]}';
+              
+          r = await callOpenRouter(systemPrompt, userPrompt);
           break;
         } catch (retryErr) {
           console.log(`Gemini feedback attempt ${attempt+1} failed:`, retryErr.message);
@@ -262,8 +249,7 @@ router.post('/:id/submit', auth, async (req,res) => {
         }
       }
 
-      feedback = JSON.parse(
-        r.response.text().replace(/```json/g,'').replace(/```/g,'').trim());
+      feedback = typeof r === 'string' ? JSON.parse(r.replace(/```json/g,'').replace(/```/g,'').trim()) : r;
     } catch(e) { console.log('Feedback AI skip:',e.message); }
 
     const resultRow = await pool.query(

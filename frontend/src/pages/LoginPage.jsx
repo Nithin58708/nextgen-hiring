@@ -109,7 +109,7 @@ const LoginPage = () => {
             <button 
               type="submit" 
               disabled={loading}
-              className="btn-gradient-purple w-full h-14 text-base font-bold tracking-wide"
+              className="btn-gradient-purple w-full h-14 text-base font-bold tracking-wide flex items-center justify-center gap-3"
             >
               {loading ? (
                 <div className="flex items-center space-x-2">

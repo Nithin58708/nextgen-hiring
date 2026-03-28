@@ -5,7 +5,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { callOpenRouter } = require('../utils/aiHelper');
+const { cleanResumeText } = require('../utils/textCleaner');
 
 const uploadDir = path.join(__dirname,'../uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir,{recursive:true});
@@ -31,7 +32,8 @@ router.post('/upload', auth, upload.single('resume'), async (req,res) => {
     try {
       const PDFParse = require('pdf-parse');
       const buf = fs.readFileSync(req.file.path);
-      const data = await PDFParse(buf);
+      const parseFunc = typeof PDFParse === 'function' ? PDFParse : PDFParse.PDFParse;
+      const data = await parseFunc(buf);
       resumeText = data.text||'';
     } catch(e) {
       console.log('PDF parse failed:',e.message);
@@ -42,25 +44,20 @@ router.post('/upload', auth, upload.single('resume'), async (req,res) => {
 
     let extracted;
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-      const r = await Promise.race([
-        model.generateContent(
-          'Extract skills from resume for Indian IT student.\n'+
-          'Return ONLY valid JSON no markdown:\n'+
-          '{"technicalSkills":["Java","React","Node.js","Python","SQL"],'+
-          '"coreTechnologies":["Git","REST APIs","MongoDB"],'+
-          '"jobRoles":["Full Stack Developer","Software Engineer"],'+
-          '"softSkills":["Problem Solving","Team Work"],'+
-          '"experienceLevel":"fresher","primaryLanguage":"JavaScript",'+
-          '"educationDetails":{"degree":"B.E","branch":"IT",'+
-          '"college":"Erode Sengunthar Engineering College","year":"2025"}}\n'+
-          'Resume text: '+resumeText.substring(0,3000)
-        ),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),20000))
-      ]);
-      extracted = JSON.parse(
-        r.response.text().replace(/```json/g,'').replace(/```/g,'').trim());
+      const systemPrompt = `Extract skills from resume for Indian IT student.
+Return ONLY valid JSON no markdown:
+{"technicalSkills":["Java","React","Node.js","Python","SQL"],
+"coreTechnologies":["Git","REST APIs","MongoDB"],
+"jobRoles":["Full Stack Developer","Software Engineer"],
+"softSkills":["Problem Solving","Team Work"],
+"experienceLevel":"fresher","primaryLanguage":"JavaScript",
+"educationDetails":{"degree":"B.E","branch":"IT",
+"college":"Erode Sengunthar Engineering College","year":"2025"}}
+Return ONLY the JSON object.`;
+      
+      const cleaned = cleanResumeText(resumeText);
+      const userPrompt = `Resume text: ${cleaned.substring(0,3000)}`;
+      extracted = await callOpenRouter(systemPrompt, userPrompt);
     } catch(e) {
       console.log('Gemini failed, keyword extraction:',e.message);
       const t = resumeText.toLowerCase();

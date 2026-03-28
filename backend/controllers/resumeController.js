@@ -2,10 +2,8 @@ const { pool } = require('../db');
 const PDFParse = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { callOpenRouter } = require('../utils/aiHelper');
+const { cleanResumeText } = require('../utils/textCleaner');
 
 exports.uploadResume = async (req, res) => {
   try {
@@ -33,14 +31,10 @@ exports.uploadResume = async (req, res) => {
         ' Java Python React Node.js SQL HTML CSS Git REST APIs JavaScript';
     }
 
-    // Call Gemini for skill extraction
+    // Call AI for skill extraction
     let extractedData;
     try {
-      const { GoogleGenerativeAI } = require('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-
-      const prompt = `Extract skills from this resume text.
+      const systemPrompt = `Extract skills from this resume text.
 Return ONLY valid JSON with NO markdown or backticks:
 {
   "technicalSkills": ["Java","Python","React","Node.js","SQL"],
@@ -51,15 +45,14 @@ Return ONLY valid JSON with NO markdown or backticks:
   "primaryLanguage": "JavaScript",
   "educationDetails": {"degree":"B.E","branch":"IT","college":"","year":"2025"}
 }
-Resume text: ${resumeText.substring(0, 3000)}
 Return ONLY the JSON object.`;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text()
-        .replace(/```json/g,'').replace(/```/g,'').trim();
-      extractedData = JSON.parse(text);
+      const cleanedResume = cleanResumeText(resumeText);
+      const userPrompt = `Resume text: ${cleanedResume.substring(0, 3000)}`;
+
+      extractedData = await callOpenRouter(systemPrompt, userPrompt);
     } catch(aiErr) {
-      console.log('Gemini failed:', aiErr.message, '- using keyword extraction');
+      console.log('AI Failed:', aiErr.message, '- using keyword extraction');
       // Keyword-based fallback
       const text = resumeText.toLowerCase();
       extractedData = {

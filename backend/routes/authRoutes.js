@@ -79,4 +79,31 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email required' });
+    
+    // Check if email already exists for another user
+    const exists = await pool.query('SELECT id FROM users WHERE email=$1 AND id!=$2', [email, req.user.id]);
+    if (exists.rows.length) return res.status(400).json({ error: 'Email already in use' });
+
+    const r = await pool.query(
+      'UPDATE users SET email=$1 WHERE id=$2 RETURNING id,username,email,role',
+      [email, req.user.id]
+    );
+    
+    if (!r.rows.length) return res.status(404).json({ error: 'User not found' });
+    
+    const user = r.rows[0];
+    return res.json({
+      success: true,
+      token: sign(user),
+      user
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

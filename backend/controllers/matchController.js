@@ -1,8 +1,5 @@
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { callOpenRouter } = require('../utils/aiHelper');
 
 exports.getMatchScore = async (req, res) => {
   const userId = req.user.id;
@@ -25,9 +22,8 @@ exports.getMatchScore = async (req, res) => {
       ? JSON.parse(job.required_skills || '[]')
       : (job.required_skills || []);
 
-    // Call Gemini for semantic reasoning
+    // Call AI for semantic reasoning
     const prompt = `
-You are an AI recruitment analyst.
 Candidate skills: ${JSON.stringify(userSkills)}
 Job title: ${job.title}
 Job description: ${job.description}
@@ -43,10 +39,7 @@ Analyze and return ONLY valid JSON:
 }
 Return ONLY the JSON. No markdown.`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const aiData = JSON.parse(cleanJson);
+    const aiData = await callOpenRouter("You are an AI recruitment analyst.", prompt);
 
     // Save to DB
     await pool.query(
@@ -72,7 +65,7 @@ exports.getSuggestions = async (req, res) => {
 
   try {
     const { pool } = require('../db');
-    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    const { callOpenRouter } = require('../utils/aiHelper');
     
     // Get user skills
     const skillsResult = await pool.query(
@@ -87,11 +80,7 @@ exports.getSuggestions = async (req, res) => {
     if (jobResult.rows.length === 0) return res.status(404).json({ error: 'Job not found' });
     const job = jobResult.rows[0];
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-
-    const prompt = `Career advisor for Indian IT student.
-Skills: ${JSON.stringify(userSkills)}
+    const prompt = `Skills: ${JSON.stringify(userSkills)}
 Target: ${job.title}
 Return ONLY valid JSON:
 {"currentMatchPercent":45,"targetMatchPercent":85,
@@ -104,10 +93,7 @@ Return ONLY valid JSON:
 "interviewTopics":["System design","OOP"],
 "estimatedReadyDate":"6-8 weeks"}`;
 
-    const result = await model.generateContent(prompt);
-    const roadmap = JSON.parse(
-      result.response.text().replace(/```json/g,'').replace(/```/g,'').trim()
-    );
+    const roadmap = await callOpenRouter("Career advisor for Indian IT student.", prompt);
 
     // Save to DB
     await pool.query('DELETE FROM suggestions WHERE user_id=$1 AND job_id=$2', [userId, jobId]);

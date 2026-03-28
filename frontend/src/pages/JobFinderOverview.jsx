@@ -9,9 +9,11 @@ import {
   Zap,
   ArrowUpRight,
   Clock,
-  GraduationCap
+  GraduationCap,
+  PenTool
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { getToken, getUser, isLoggedIn, authHeaders } from '../utils/auth';
 
 const JobFinderOverview = () => {
@@ -54,6 +56,59 @@ const JobFinderOverview = () => {
     else setLoading(false);
   }, [token, navigate]);
 
+  const handleUpdateEmail = () => {
+    Swal.fire({
+      title: 'Update Contact Email',
+      html: `
+        <p class="text-xs text-muted mb-4">You will receive application updates here.</p>
+        <input type="email" id="swal-email" class="swal2-input bg-dark text-white border-white/10" value="${user?.email || ''}" placeholder="Enter new email">
+      `,
+      background: '#1E293B',
+      color: '#fff',
+      showCancelButton: true,
+      confirmButtonText: 'Update Email',
+      customClass: {
+        popup: 'glass-card border border-white/10 rounded-2xl',
+        confirmButton: 'bg-primary text-white font-bold rounded-xl px-6 py-2',
+        cancelButton: 'bg-white/5 text-white font-bold rounded-xl px-6 py-2 ml-2'
+      },
+      preConfirm: () => {
+        const newEmail = document.getElementById('swal-email').value;
+        if (!newEmail || !newEmail.includes('@')) {
+          Swal.showValidationMessage('Please enter a valid email address');
+        }
+        return newEmail;
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axios.put('http://localhost:5005/api/auth/profile', 
+            { email: result.value }, 
+            { headers: authHeaders() }
+          );
+          if (res.data.success) {
+            localStorage.setItem('token', res.data.token);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+            Swal.fire({
+               icon: 'success',
+               title: 'Updated!',
+               text: 'Your contact email has been updated successfully.',
+               background: '#1E293B', color: '#fff',
+               showConfirmButton: false, timer: 1500
+            }).then(() => window.location.reload());
+          }
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Update Failed',
+            text: err.response?.data?.error || 'Could not update email',
+            background: '#1E293B', color: '#fff'
+          });
+        }
+      }
+    });
+  };
+
   if (loading) return <div className="p-20 text-center text-white">Initializing Neural Dashboard...</div>;
 
   return (
@@ -67,7 +122,10 @@ const JobFinderOverview = () => {
           </div>
           <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">Your Career Intelligence Hub</h2>
           <p className="text-muted text-lg max-w-xl">
-            Welcome, {user?.name?.split(' ')[0] || user?.username || 'Candidate'}. Your profile is currently being tracked against <span className="text-white font-bold">128 active roles</span> in our network.
+            Welcome, {user?.name?.split(' ')[0] || user?.username || 'Candidate'}. 
+            Your contact email is <span className="text-primary font-bold cursor-pointer hover:underline inline-flex items-center gap-1" onClick={handleUpdateEmail}>{user?.email || 'Not Set'} <PenTool size={12}/></span>.
+            <br/><br/>
+            Your profile is currently being tracked against <span className="text-white font-bold">128 active roles</span> in our network.
           </p>
         </div>
         <Link to="/finder/jobs" className="btn-gradient-purple h-16 px-10 whitespace-nowrap">
