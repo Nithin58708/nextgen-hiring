@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getUser, logout, isLoggedIn } from '../utils/auth';
+import { getUser, logout, isLoggedIn, authHeaders } from '../utils/auth';
 import { LogOut, User, LayoutDashboard, Zap, Menu, Bell, X } from 'lucide-react';
+import Swal from 'sweetalert2';
+import axios from 'axios';
 
 const Navbar = () => {
   const user = getUser();
@@ -18,6 +20,61 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleUpdateProfile = () => {
+    Swal.fire({
+      title: 'Global Preferences',
+      html: `
+        <div class="space-y-6 pt-6 pb-2 text-left">
+          <div class="group">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">Neural Identity</label>
+            <input type="text" id="swal-global-username" class="swal2-input bg-[#1e293b]/50 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner focus:border-white/20 focus:bg-[#1e293b]/80 transition-all" value="${user?.username || ''}" placeholder="E.g. jdoe_nexus">
+          </div>
+          <div class="group mt-6">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">Contact Protocol</label>
+            <input type="email" id="swal-global-email" class="swal2-input bg-[#1e293b]/50 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner focus:border-white/20 focus:bg-[#1e293b]/80 transition-all" value="${user?.email || ''}" placeholder="signal@domain.com">
+          </div>
+        </div>
+      `,
+      background: 'rgba(15, 23, 42, 0.85)',
+      color: '#fff',
+      backdrop: 'rgba(0,0,0,0.6) backdrop-filter backdrop-blur-md',
+      showCancelButton: true,
+      confirmButtonText: 'Sync Coordinates',
+      cancelButtonText: 'Abort',
+      customClass: {
+        popup: 'border border-white/10 rounded-[3rem] shadow-[0_0_50px_rgba(124,58,237,0.15)] w-[36rem]',
+        confirmButton: 'btn-gradient-purple font-black uppercase tracking-widest text-xs rounded-[2rem] px-10 py-5 shadow-purple-glow hover:scale-105 transition-transform duration-300',
+        cancelButton: 'bg-[#1e293b] hover:bg-[#334155] border border-white/10 text-white font-black uppercase tracking-widest text-xs rounded-[2rem] px-10 py-5 ml-4 transition-colors'
+      },
+      preConfirm: () => {
+        const username = document.getElementById('swal-global-username').value;
+        const email = document.getElementById('swal-global-email').value;
+        return { username, email };
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await axios.put('http://localhost:5005/api/auth/profile', 
+            result.value, 
+            { headers: authHeaders() }
+          );
+          // Update the localized session so it reflects correctly
+          if (res.data.token && res.data.user) {
+            localStorage.setItem('token', res.data.token);
+            localStorage.setItem('user', JSON.stringify(res.data.user));
+          }
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Sync Failed',
+            text: err.response?.data?.error || 'Could not update profile',
+            background: '#0f172a', color: '#fff'
+          });
+        }
+      }
+    });
   };
 
   return (
@@ -42,15 +99,15 @@ const Navbar = () => {
                 </button>
                 
                 <div className="flex items-center space-x-5">
-                  <Link 
-                    to={user.role === 'admin' ? '/admin/dashboard' : user.role === 'job_poster' ? '/poster' : '/finder'}
+                  <button 
+                    onClick={handleUpdateProfile}
                     className="flex items-center space-x-3 pl-2 pr-5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-bold transition-all duration-300"
                   >
                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary border border-primary/30">
                       <User size={16} />
                     </div>
                     <span>{user.name || user.username}</span>
-                  </Link>
+                  </button>
                   <button 
                     onClick={handleLogout}
                     className="p-2.5 text-muted hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all duration-300"

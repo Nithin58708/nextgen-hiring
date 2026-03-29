@@ -56,34 +56,42 @@ const JobFinderOverview = () => {
     else setLoading(false);
   }, [token, navigate]);
 
-  const handleUpdateEmail = () => {
+  const handleUpdateProfile = () => {
     Swal.fire({
-      title: 'Update Contact Email',
+      title: 'Update Neural Profile',
       html: `
-        <p class="text-xs text-muted mb-4">You will receive application updates here.</p>
-        <input type="email" id="swal-email" class="swal2-input bg-dark text-white border-white/10" value="${user?.email || ''}" placeholder="Enter new email">
+        <div class="space-y-4 pt-4">
+          <div class="text-left">
+            <label class="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Full Name / Username</label>
+            <input type="text" id="swal-username" class="swal2-input bg-dark text-white border-white/10 w-full m-0" value="${user?.username || ''}" placeholder="Enter name">
+          </div>
+          <div class="text-left mt-4">
+            <label class="text-[10px] font-black uppercase tracking-widest text-muted mb-2 block">Contact Email</label>
+            <input type="email" id="swal-email" class="swal2-input bg-dark text-white border-white/10 w-full m-0" value="${user?.email || ''}" placeholder="Enter email">
+          </div>
+        </div>
       `,
-      background: '#1E293B',
+      background: '#0f172a',
       color: '#fff',
       showCancelButton: true,
-      confirmButtonText: 'Update Email',
+      confirmButtonText: 'Sync Profile',
       customClass: {
-        popup: 'glass-card border border-white/10 rounded-2xl',
-        confirmButton: 'bg-primary text-white font-bold rounded-xl px-6 py-2',
-        cancelButton: 'bg-white/5 text-white font-bold rounded-xl px-6 py-2 ml-2'
+        popup: 'glass-card border border-white/10 rounded-2xl shadow-2xl',
+        confirmButton: 'bg-primary text-white font-bold rounded-xl px-8 py-3',
+        cancelButton: 'bg-white/5 text-white font-bold rounded-xl px-8 py-3 ml-2'
       },
       preConfirm: () => {
-        const newEmail = document.getElementById('swal-email').value;
-        if (!newEmail || !newEmail.includes('@')) {
-          Swal.showValidationMessage('Please enter a valid email address');
-        }
-        return newEmail;
+        const username = document.getElementById('swal-username').value;
+        const email = document.getElementById('swal-email').value;
+        if (!username) Swal.showValidationMessage('Name is required');
+        if (!email || !email.includes('@')) Swal.showValidationMessage('Valid email required');
+        return { username, email };
       }
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const res = await axios.put('http://localhost:5005/api/auth/profile', 
-            { email: result.value }, 
+            result.value, 
             { headers: authHeaders() }
           );
           if (res.data.success) {
@@ -91,18 +99,18 @@ const JobFinderOverview = () => {
             localStorage.setItem('user', JSON.stringify(res.data.user));
             Swal.fire({
                icon: 'success',
-               title: 'Updated!',
-               text: 'Your contact email has been updated successfully.',
-               background: '#1E293B', color: '#fff',
+               title: 'Profile Synced',
+               text: 'Your neural coordinates have been updated.',
+               background: '#0f172a', color: '#fff',
                showConfirmButton: false, timer: 1500
             }).then(() => window.location.reload());
           }
         } catch (err) {
           Swal.fire({
             icon: 'error',
-            title: 'Update Failed',
-            text: err.response?.data?.error || 'Could not update email',
-            background: '#1E293B', color: '#fff'
+            title: 'Sync Failed',
+            text: err.response?.data?.error || 'Could not update profile',
+            background: '#0f172a', color: '#fff'
           });
         }
       }
@@ -114,21 +122,21 @@ const JobFinderOverview = () => {
   return (
     <div className="space-y-12 animate-page-enter">
       {/* Top Banner */}
-      <div className="glass-card p-10 bg-gradient-to-r from-dark-card to-dark-accent border-primary/20 flex flex-col lg:flex-row justify-between items-center gap-10">
+      <div className="glass-card p-10 bg-gradient-to-r from-dark-card to-dark-accent border-primary/20 flex flex-col lg:flex-row justify-between items-center gap-10 hover:border-primary/40 transition-all cursor-pointer group" onClick={handleUpdateProfile}>
         <div className="flex-1">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-primary/10 rounded-full text-[10px] font-black uppercase tracking-widest text-primary mb-4 border border-primary/20">
             <Zap size={10} className="fill-primary" />
             <span>Profile Optimization Active</span>
           </div>
-          <h2 className="text-4xl font-black text-white mb-4 tracking-tighter">Your Career Intelligence Hub</h2>
+          <h2 className="text-4xl font-black text-white mb-4 tracking-tighter group-hover:text-primary transition-colors">Your Career Intelligence Hub</h2>
           <p className="text-muted text-lg max-w-xl">
-            Welcome, {user?.name?.split(' ')[0] || user?.username || 'Candidate'}. 
-            Your contact email is <span className="text-primary font-bold cursor-pointer hover:underline inline-flex items-center gap-1" onClick={handleUpdateEmail}>{user?.email || 'Not Set'} <PenTool size={12}/></span>.
+            Welcome, <span className="text-white font-bold">{user?.username || 'Candidate'}</span>. 
+            Maintain your neural coordinates: <span className="text-primary font-bold hover:underline inline-flex items-center gap-1">{user?.email || 'Not Set'} <PenTool size={12}/></span>.
             <br/><br/>
             Your profile is currently being tracked against <span className="text-white font-bold">128 active roles</span> in our network.
           </p>
         </div>
-        <Link to="/finder/jobs" className="btn-gradient-purple h-16 px-10 whitespace-nowrap">
+        <Link to="/finder/jobs" onClick={(e) => e.stopPropagation()} className="btn-gradient-purple h-16 px-10 whitespace-nowrap">
           Launch Search Board <ArrowUpRight size={20} />
         </Link>
       </div>
