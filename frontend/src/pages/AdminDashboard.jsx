@@ -116,18 +116,42 @@ const AdminDashboard = () => {
 
   const handleAddUser = async () => {
     const { value } = await Swal.fire({
-      title: 'Add New User',
-      background: '#0d1526', color: '#fff',
-      html: `<input id="s-name" class="swal2-input" placeholder="Username">
-             <input id="s-email" class="swal2-input" placeholder="Email">
-             <input id="s-pass" class="swal2-input" type="password" placeholder="Password">
-             <select id="s-role" class="swal2-input" style="background:#1e293b;color:#fff">
-               <option value="job_finder">Job Finder</option>
-               <option value="job_poster">Job Poster</option>
-             </select>`,
+      title: 'Initialize Asset',
+      background: 'rgba(15, 23, 42, 0.85)',
+      color: '#fff',
+      backdrop: 'rgba(0,0,0,0.6) backdrop-filter backdrop-blur-md',
+      html: `
+        <div class="space-y-6 text-left pt-6 pb-2 px-2">
+          <div class="group">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">Asset Designation</label>
+            <input id="s-name" class="swal2-input bg-[#1e293b]/50 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner focus:border-white/20 focus:bg-[#1e293b]/80 transition-all" placeholder="e.g. jdoe_nexus">
+          </div>
+          <div class="group">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">Contact Protocol</label>
+            <input id="s-email" class="swal2-input bg-[#1e293b]/50 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner focus:border-white/20 focus:bg-[#1e293b]/80 transition-all" placeholder="signal@domain.com">
+          </div>
+          <div class="group">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">Encryption Key</label>
+            <input id="s-pass" class="swal2-input bg-[#1e293b]/50 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner focus:border-white/20 focus:bg-[#1e293b]/80 transition-all" type="password" placeholder="Secure Password">
+          </div>
+          <div class="group">
+            <label class="text-[10px] font-black uppercase tracking-widest text-[#94a3b8] mb-3 block pl-2 group-focus-within:text-white transition-colors">System Clearance</label>
+            <select id="s-role" class="swal2-input bg-[#1e293b]/50 focus:bg-[#1e293b]/80 text-white border-white/5 w-full m-0 px-6 rounded-[2rem] h-16 shadow-inner transition-all" style="color:#fff">
+              <option value="job_finder" class="bg-[#1e293b]">Job Finder</option>
+              <option value="job_poster" class="bg-[#1e293b]">Job Poster</option>
+              <option value="admin" class="bg-[#1e293b]">System Admin</option>
+            </select>
+          </div>
+        </div>`,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonColor: '#7C3AED',
+      confirmButtonText: 'Deploy',
+      cancelButtonText: 'Abort',
+      customClass: {
+        popup: 'border border-white/10 rounded-[3rem] shadow-[0_0_50px_rgba(124,58,237,0.15)] w-[38rem]',
+        confirmButton: 'btn-gradient-purple font-black uppercase tracking-widest text-xs rounded-[2rem] px-10 py-5 shadow-purple-glow hover:scale-105 transition-transform duration-300 mt-6',
+        cancelButton: 'bg-[#1e293b] hover:bg-[#334155] border border-white/10 text-white font-black uppercase tracking-widest text-xs rounded-[2rem] px-10 py-5 ml-4 mt-6 transition-colors'
+      },
       preConfirm: () => ({
         username: document.getElementById('s-name').value,
         email: document.getElementById('s-email').value,

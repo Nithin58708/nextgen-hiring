@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { callOpenRouter } = require('../utils/aiHelper');
 
 router.get('/score/:jobId', auth, async (req, res) => {
   await getMatchScore(req, res);
@@ -33,20 +33,13 @@ async function getMatchScore(req, res) {
       ? Math.round((matched.length/jSkills.length)*100) : 50;
     let reasoning = 'Score based on skill overlap with job requirements.';
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-      const r = await Promise.race([
-        model.generateContent(
-          'Score '+score+'% for candidate with skills '+
+      const userPrompt = 'Score '+score+'% for candidate with skills '+
           JSON.stringify(userSkills).substring(0,200)+
           ' applying for '+job.title+'. Required: '+
           JSON.stringify(jSkills)+
-          '. Write 2 sentence explanation. Return ONLY: {"reasoning":"your text"}'
-        ),
-        new Promise((_,rej)=>setTimeout(()=>rej(new Error('t')),10000))
-      ]);
-      const d = JSON.parse(
-        r.response.text().replace(/```json/g,'').replace(/```/g,'').trim());
+          '. Write 2 sentence explanation.';
+      const r = await callOpenRouter('Return ONLY: {"reasoning":"your text"}', userPrompt);
+      const d = typeof r === 'string' ? JSON.parse(r.replace(/```json/g,'').replace(/```/g,'').trim()) : r;
       reasoning = d.reasoning || reasoning;
     } catch(e) {}
     const result = { success:true, score, matchedSkills:matched,

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { callOpenRouter } = require('../utils/aiHelper');
 
 router.get('/roadmap', auth, async (req, res) => {
   try {
@@ -52,14 +52,8 @@ Return ONLY valid JSON no markdown no backticks:
 
     let roadmap;
     try {
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const result = await Promise.race([
-        model.generateContent(prompt),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 20000))
-      ]);
-      roadmap = JSON.parse(
-        result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
+      const result = await callOpenRouter("Return ONLY valid JSON.", prompt);
+      roadmap = typeof result === 'string' ? JSON.parse(result.replace(/```json/g, '').replace(/```/g, '').trim()) : result;
     } catch (aiErr) {
       console.log('Gemini roadmap failed, using fallback:', aiErr.message);
       const uLow = userSkills.map(s => s.toLowerCase());

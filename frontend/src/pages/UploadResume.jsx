@@ -92,11 +92,11 @@ const UploadResume = () => {
         <p className="text-muted text-lg">Upload your PDF resume to initialize deep skill extraction and job matching.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-10 items-stretch">
         {/* Upload Terminal */}
-        <div className="lg:col-span-3">
-          <form onSubmit={handleUpload} className="space-y-8">
-            <div className={`relative group border-2 border-dashed rounded-[2.5rem] p-16 transition-all duration-500 flex flex-col items-center justify-center text-center overflow-hidden
+        <div className="lg:col-span-3 h-full">
+          <form onSubmit={handleUpload} className="flex flex-col h-full space-y-8">
+            <div className={`flex-1 relative group border-2 border-dashed rounded-[2.5rem] p-16 transition-all duration-500 flex flex-col items-center justify-center text-center overflow-hidden
               ${file ? 'border-primary bg-primary/5' : 'border-white/10 hover:border-primary/50 bg-dark-card'}
             `}>
               <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -108,7 +108,7 @@ const UploadResume = () => {
                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
               />
               
-              <div className="relative z-10">
+              <div className="relative z-10 w-full">
                 <div className={`w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 transition-all duration-500
                   ${file ? 'bg-primary text-white shadow-purple-glow' : 'bg-white/5 text-muted group-hover:bg-primary/20 group-hover:text-primary'}
                 `}>
@@ -135,7 +135,7 @@ const UploadResume = () => {
             <button 
               type="submit" 
               disabled={loading || !file}
-              className="btn-gradient-purple w-full h-16 text-lg font-black group overflow-hidden"
+              className="btn-gradient-purple w-full h-16 text-lg font-black group overflow-hidden shrink-0"
             >
               {loading ? (
                 <div className="flex items-center space-x-3">
@@ -173,8 +173,8 @@ const UploadResume = () => {
             {profile?.extracted_skills ? (
               <div className="space-y-10 relative z-10">
                 <SkillSection title="Technical Expertise" items={parseSkills(profile.extracted_skills)} color="primary" />
-                <SkillSection title="Identified Role" items={[profile.primary_job_role]} color="indigo" />
-                <SkillSection title="Main Language" items={[profile.primary_language]} color="secondary" />
+                <SkillSection title="Identified Role" items={[profile.primary_job_role].filter(Boolean)} color="indigo" />
+                <SkillSection title="Main Language" items={[profile.primary_language].filter(Boolean)} color="secondary" />
                 
                 <div className="pt-8 border-t border-white/5 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-muted">
                   <span>Last Sync Success</span>

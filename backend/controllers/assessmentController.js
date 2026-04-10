@@ -1,8 +1,5 @@
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { callOpenRouter } = require('../utils/aiHelper');
 
 // POST /api/assessments/generate
 exports.generateQuestions = async (req, res) => {
@@ -15,7 +12,8 @@ exports.generateQuestions = async (req, res) => {
     const role = profile.rows[0]?.primary_job_role || 'Software Engineer';
     const skills = profile.rows[0]?.extracted_skills || [];
 
-    const prompt = `Create a mock technical interview for a ${role} position.
+    const systemPrompt = "You are a technical interview question generator.";
+    const userPrompt = `Create a mock technical interview for a ${role} position.
 Skills: ${JSON.stringify(skills)}
 Return ONLY valid JSON:
 {
@@ -25,15 +23,12 @@ Return ONLY valid JSON:
 }
 Return 10 MCQs.`;
 
-    const geminiCall = model.generateContent(prompt);
+    const aiCall = callOpenRouter(systemPrompt, userPrompt);
     const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Gemini timeout 20s')), 20000)
+      setTimeout(() => reject(new Error('OpenRouter timeout 20s')), 20000)
     );
 
-    const result = await Promise.race([geminiCall, timeout]);
-    const responseText = result.response.text();
-    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const data = JSON.parse(cleanJson);
+    const data = await Promise.race([aiCall, timeout]);
 
     const assessmentResult = await pool.query(
       `INSERT INTO assessments (user_id, job_role, questions, status)
@@ -89,6 +84,7 @@ exports.submitAssessment = async (req, res) => {
     const weakAreas = [...new Set(wrongCategories)];
 
     // Get AI feedback
+    const systemPrompt = "You are a technical interview evaluator.";
     const feedbackPrompt = `
 A ${assessmentResult.rows[0].job_role} candidate scored ${score}% 
 on a placement test. Wrong categories: ${JSON.stringify(weakAreas)}.
@@ -112,9 +108,7 @@ Return ONLY valid JSON:
 }
 Return ONLY JSON. No markdown.`;
 
-    const feedbackResult = await model.generateContent(feedbackPrompt);
-    const feedback = JSON.parse(feedbackResult.response.text()
-      .replace(/```json/g,'').replace(/```/g,'').trim());
+    const feedback = await callOpenRouter(systemPrompt, feedbackPrompt);
 
     // Save result
     await pool.query(

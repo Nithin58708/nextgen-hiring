@@ -1,48 +1,35 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
+const { callOpenRouter } = require('../utils/aiHelper');
 exports.searchExternalJobs = async (req, res) => {
   try {
     const { skills = [], job_roles = [], searchQuery = 'Software Developer' } = req.body;
     console.log('External search request:', { skills, job_roles, searchQuery });
     
-    const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyBqsbo1oE_RfPs8pRSli-59vgQNHo4-wNo';
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    
-    const prompt = `You are a job search assistant for India.
-Generate 6 realistic job opportunities for a candidate with these skills.
+    const systemPrompt = "You are a job search assistant for India.";
+    const userPrompt = `Generate 6 realistic job opportunities for a candidate with these skills.
 Skills: ${skills.slice(0,10).join(', ')}
 Job Roles: ${job_roles.join(', ')}
 Search: ${searchQuery}
 
-Return ONLY a JSON array. No markdown. No backticks. Just the array:
-[
-  {
-    "title": "Full Stack Developer",
-    "company": "TCS",
-    "location": "Chennai, Tamil Nadu",
-    "description": "Looking for developer with Java and web skills",
-    "required_skills": ["Java","HTML","CSS","SQL"],
-    "salary": "6-10 LPA",
-    "experience": "0-2 years",
-    "apply_link": "https://www.tcs.com/careers",
-    "source": "TCS Careers"
-  }
-]
+Return ONLY a JSON object containing a "jobs" array. No markdown. No backticks:
+{
+  "jobs": [
+    {
+      "title": "Full Stack Developer",
+      "company": "TCS",
+      "location": "Chennai, Tamil Nadu",
+      "description": "Looking for developer with Java and web skills",
+      "required_skills": ["Java","HTML","CSS","SQL"],
+      "salary": "6-10 LPA",
+      "experience": "0-2 years",
+      "apply_link": "https://www.tcs.com/careers",
+      "source": "TCS Careers"
+    }
+  ]
+}
 Generate jobs specifically relevant to the candidate's skills above. Return exactly 6 items.`;
 
-    const result = await model.generateContent(prompt);
-    let responseText = result.response.text().trim();
-    console.log('Gemini external jobs response:', responseText.substring(0, 500));
-    
-    responseText = responseText.replace(/```json/g,'').replace(/```/g,'').trim();
-    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-    
-    if (!jsonMatch) {
-      throw new Error('No valid JSON array in response');
-    }
-    
-    const jobs = JSON.parse(jsonMatch[0]);
+    const result = await callOpenRouter(systemPrompt, userPrompt);
+    const jobs = Array.isArray(result) ? result : (result.jobs || []);
     console.log('External jobs generated:', jobs.length);
     res.json({ success: true, jobs });
     

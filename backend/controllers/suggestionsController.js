@@ -1,8 +1,5 @@
 const { pool } = require('../db');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { callOpenRouter } = require('../utils/aiHelper');
 
 exports.getRoadmap = async (req, res) => {
   const userId = req.user.id;
@@ -34,9 +31,8 @@ exports.getRoadmap = async (req, res) => {
       jobRole = profileResult.rows[0]?.primary_job_role || 'Software Engineer';
     }
 
-    // Gemini prompt
-    const prompt = `
-You are a career advisor for an Indian IT fresher student.
+    const systemPrompt = "You are a career advisor for an Indian IT fresher student.";
+    const userPrompt = `
 Student's current skills: ${JSON.stringify(userSkills)}
 Target job role: ${jobRole}
 Job description: ${jobDescription}
@@ -71,10 +67,7 @@ Return ONLY valid JSON — no markdown, no backticks:
 }
 Return ONLY the JSON.`;
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const roadmap = JSON.parse(cleanJson);
+    const roadmap = await callOpenRouter(systemPrompt, userPrompt);
 
     // Save to DB (delete old, insert new)
     await pool.query('DELETE FROM suggestions WHERE user_id=$1', [userId]);

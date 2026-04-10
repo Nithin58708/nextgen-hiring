@@ -22,6 +22,7 @@ import {
   FileText
 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import GlassSelect from '../components/GlassSelect';
 
 const MyJobPosts = () => {
   const navigate = useNavigate();
@@ -277,18 +278,17 @@ const MyJobPosts = () => {
 
                                     <div className="flex gap-4">
                                         <div className="flex-1 relative">
-                                            <select 
+                                            <GlassSelect 
                                                 value={app.status}
-                                                onChange={(e) => handleUpdateStatus(app.id, e.target.value)}
+                                                onChange={(val) => handleUpdateStatus(app.id, val)}
                                                 disabled={updatingStatus === app.id}
-                                                className="w-full h-12 pl-4 pr-10 appearance-none bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-white uppercase tracking-widest focus:border-primary/50 transition-all cursor-pointer outline-none"
-                                            >
-                                                <option value="applied">Applied</option>
-                                                <option value="shortlisted">Shortlist</option>
-                                                <option value="rejected">Reject</option>
-                                                <option value="hired">Hire</option>
-                                            </select>
-                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted" size={16} />
+                                                options={[
+                                                    { value: 'applied', label: 'Applied', colorClass: 'text-white' },
+                                                    { value: 'shortlisted', label: 'Shortlist', colorClass: 'text-green-400' },
+                                                    { value: 'rejected', label: 'Reject', colorClass: 'text-red-500' },
+                                                    { value: 'hired', label: 'Hire', colorClass: 'text-green-500' }
+                                                ]}
+                                            />
                                         </div>
                                         <button className="h-12 px-6 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all font-bold text-xs flex items-center gap-2">
                                             <FileText size={16} className="text-primary" /> Profile

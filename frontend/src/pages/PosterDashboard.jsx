@@ -8,6 +8,7 @@ import {
   Loader2, Briefcase 
 } from 'lucide-react';
 import { getToken, isLoggedIn, authHeaders } from '../utils/auth';
+import GlassSelect from '../components/GlassSelect';
 
 const PosterDashboard = () => {
     const navigate = useNavigate();
@@ -54,11 +55,11 @@ const PosterDashboard = () => {
             background: '#0d1526',
             color: '#fff',
             html:
-                '<input id="swal-input1" class="swal2-input !bg-white/5 !border-white/10 !text-white" placeholder="Job Title">' +
-                '<input id="swal-input2" class="swal2-input !bg-white/5 !border-white/10 !text-white" placeholder="Company">' +
-                '<input id="swal-input3" class="swal2-input !bg-white/5 !border-white/10 !text-white" placeholder="Location">' +
-                '<input id="swal-input4" class="swal2-input !bg-white/5 !border-white/10 !text-white" placeholder="Salary Range">' +
-                '<textarea id="swal-input5" class="swal2-textarea !bg-white/5 !border-white/10 !text-white" placeholder="Description"></textarea>',
+                '<input id="swal-input1" class="swal2-input input-field mb-3" style="width: 80%" placeholder="Job Title">' +
+                '<input id="swal-input2" class="swal2-input input-field mb-3" style="width: 80%" placeholder="Company">' +
+                '<input id="swal-input3" class="swal2-input input-field mb-3" style="width: 80%" placeholder="Location">' +
+                '<input id="swal-input4" class="swal2-input input-field mb-3" style="width: 80%" placeholder="Salary Range">' +
+                '<textarea id="swal-input5" class="swal2-textarea input-field mb-3 min-h-[100px] resize-none" style="width: 80%" placeholder="Description"></textarea>',
             focusConfirm: false,
             preConfirm: () => {
                 return {
@@ -198,15 +199,16 @@ const PosterDashboard = () => {
                             <div className="flex items-center gap-6 w-full lg:w-auto mt-6 lg:mt-0">
                                 <div className="flex-1 lg:flex-none">
                                     <p className="text-[10px] font-black text-muted uppercase tracking-widest mb-2 px-1">Current Status</p>
-                                    <select 
+                                    <GlassSelect 
                                         value={app.status || 'pending'}
-                                        onChange={(e) => updateStatus(app.id, e.target.value)}
-                                        className="w-full lg:w-48 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-widest text-white outline-none cursor-pointer focus:border-primary transition-all"
-                                    >
-                                        <option value="pending" className="bg-dark">Pending</option>
-                                        <option value="shortlisted" className="bg-dark text-green-400">Shortlisted</option>
-                                        <option value="rejected" className="bg-dark text-red-500">Rejected</option>
-                                    </select>
+                                        onChange={(val) => updateStatus(app.id, val)}
+                                        className="w-full lg:w-48"
+                                        options={[
+                                            { value: 'pending', label: 'Pending', colorClass: 'text-white' },
+                                            { value: 'shortlisted', label: 'Shortlisted', colorClass: 'text-green-400' },
+                                            { value: 'rejected', label: 'Rejected', colorClass: 'text-red-500' }
+                                        ]}
+                                    />
                                 </div>
                                 <button className="p-4 bg-white/5 border border-white/10 rounded-2xl text-muted hover:text-white transition-all">
                                     <ExternalLink size={24} />

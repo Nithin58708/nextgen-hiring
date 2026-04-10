@@ -2,10 +2,8 @@ const { pool } = require('../db');
 const PDFParse = require('pdf-parse');
 const fs = require('fs');
 const path = require('path');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+const { callOpenRouter, offlineKeywordExtraction } = require('../utils/aiHelper');
+const { cleanResumeText } = require('../utils/textCleaner');
 
 exports.uploadResume = async (req, res) => {
   try {
@@ -18,72 +16,54 @@ exports.uploadResume = async (req, res) => {
     // Try to extract PDF text
     let resumeText = '';
     try {
+      const PDFParse = require('pdf-parse');
       const buffer = fs.readFileSync(req.file.path);
-      const data = await PDFParse.PDFParse(buffer);
+      // Determine what was actually exported
+      const parseFunc = typeof PDFParse === 'function' ? PDFParse : (PDFParse.PDFParse || PDFParse.default);
+      
+      if (!parseFunc || typeof parseFunc !== 'function') {
+        throw new Error('Module pdf-parse is malformed or invalid version.');
+      }
+      
+      const data = await parseFunc(buffer);
       resumeText = data.text || '';
     } catch(pdfErr) {
-      console.log('PDF parse failed:', pdfErr.message);
-      resumeText = ''; // Continue with empty text
+      console.log('PDF parse error gracefully handled:', pdfErr.message);
+      // We explicitly leave resumeText empty so AI fallback will kick in 
+      // instead of hardcoding static arrays.
+      resumeText = ''; 
     }
 
     // If no text extracted, use filename as hint
     if (!resumeText || resumeText.trim().length < 20) {
-      console.log('No PDF text, using fallback extraction');
-      resumeText = req.file.originalname + 
-        ' Java Python React Node.js SQL HTML CSS Git REST APIs JavaScript';
+      console.log('No PDF text extracted, using filename hint only');
+      resumeText = req.file.originalname;
     }
 
-    // Call Gemini for skill extraction
+    // Call AI for skill extraction
     let extractedData;
     try {
-      const { GoogleGenerativeAI } = require('@google/generative-ai');
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({model:'gemini-2.0-flash'});
-
-      const prompt = `Extract skills from this resume text.
-Return ONLY valid JSON with NO markdown or backticks:
+      const systemPrompt = `Extract professional skills, technologies, and education from this resume text.
+Return ONLY valid JSON with the following structure:
 {
-  "technicalSkills": ["Java","Python","React","Node.js","SQL"],
-  "coreTechnologies": ["Git","REST APIs","MongoDB"],
-  "jobRoles": ["Full Stack Developer","Backend Developer"],
-  "softSkills": ["Problem Solving","Team Work"],
-  "experienceLevel": "fresher",
-  "primaryLanguage": "JavaScript",
-  "educationDetails": {"degree":"B.E","branch":"IT","college":"","year":"2025"}
+  "technicalSkills": [],
+  "coreTechnologies": [],
+  "jobRoles": [],
+  "softSkills": [],
+  "experienceLevel": "fresher" | "junior" | "mid" | "senior",
+  "primaryLanguage": "",
+  "educationDetails": {"degree":"", "branch":"", "college":"", "year":""}
 }
-Resume text: ${resumeText.substring(0, 3000)}
-Return ONLY the JSON object.`;
+Return ONLY the JSON object, NO markdown.`;
 
-      const result = await model.generateContent(prompt);
-      const text = result.response.text()
-        .replace(/```json/g,'').replace(/```/g,'').trim();
-      extractedData = JSON.parse(text);
+      const cleanedResume = cleanResumeText(resumeText);
+      const userPrompt = `Resume text: ${cleanedResume.substring(0, 4000)}`;
+
+      extractedData = await callOpenRouter(systemPrompt, userPrompt);
     } catch(aiErr) {
-      console.log('Gemini failed:', aiErr.message, '- using keyword extraction');
-      // Keyword-based fallback
-      const text = resumeText.toLowerCase();
-      extractedData = {
-        technicalSkills: [
-          text.includes('java') ? 'Java' : null,
-          text.includes('python') ? 'Python' : null,
-          text.includes('react') ? 'React' : null,
-          text.includes('node') ? 'Node.js' : null,
-          text.includes('sql') ? 'SQL' : null,
-          text.includes('javascript') ? 'JavaScript' : null,
-          text.includes('html') ? 'HTML' : null,
-          text.includes('css') ? 'CSS' : null,
-          'Problem Solving'
-        ].filter(Boolean),
-        coreTechnologies: ['Git','REST APIs','PostgreSQL'],
-        jobRoles: ['Software Developer','Full Stack Developer'],
-        softSkills: ['Communication','Team Work'],
-        experienceLevel: 'fresher',
-        primaryLanguage: 'JavaScript',
-        educationDetails: {
-          degree:'B.E', branch:'Information Technology',
-          college:'Erode Sengunthar Engineering College', year:'2025'
-        }
-      };
+      console.warn('AI Parsing Quota/Network Error:', aiErr.message, '- Using Offline Keyword Extractor instead');
+      // Power robust offline keyword extractor algorithm
+      extractedData = offlineKeywordExtraction(resumeText);
     }
 
     const userId = req.user.id;
@@ -125,8 +105,8 @@ Return ONLY the JSON object.`;
        ON CONFLICT (user_id) DO UPDATE SET
        primary_job_role=$2, primary_language=$3, extracted_skills=$4`,
       [userId,
-       extractedData.jobRoles?.[0] || 'Software Developer',
-       extractedData.primaryLanguage || 'JavaScript',
+       extractedData.jobRoles?.[0] || null,
+       extractedData.primaryLanguage || null,
        JSON.stringify(extractedData.technicalSkills || [])]
     );
 

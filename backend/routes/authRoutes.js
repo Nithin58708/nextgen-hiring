@@ -79,4 +79,46 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { email, username } = req.body;
+    if (!email && !username) return res.status(400).json({ error: 'Email or Username required' });
+    
+    // Check if email already exists for another user
+    if (email) {
+      const exists = await pool.query('SELECT id FROM users WHERE email=$1 AND id!=$2', [email, req.user.id]);
+      if (exists.rows.length) return res.status(400).json({ error: 'Email already in use' });
+    }
+
+    // Check if username already exists for another user
+    if (username) {
+      const exists = await pool.query('SELECT id FROM users WHERE username=$1 AND id!=$2', [username, req.user.id]);
+      if (exists.rows.length) return res.status(400).json({ error: 'Username already taken' });
+    }
+
+    const sets = [];
+    const vals = [];
+    let idx = 1;
+    if (email) { sets.push(`email=$${idx++}`); vals.push(email); }
+    if (username) { sets.push(`username=$${idx++}`); vals.push(username); }
+    vals.push(req.user.id);
+
+    const r = await pool.query(
+      `UPDATE users SET ${sets.join(', ')} WHERE id=$${idx} RETURNING id,username,email,role`,
+      vals
+    );
+    
+    if (!r.rows.length) return res.status(404).json({ error: 'User not found' });
+    
+    const user = r.rows[0];
+    return res.json({
+      success: true,
+      token: sign(user),
+      user
+    });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

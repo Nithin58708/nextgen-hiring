@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { getToken, getUser, isLoggedIn, authHeaders } from '../utils/auth';
 import { Lightbulb, Info, Loader2, ChevronLeft, PlusCircle, Target, Zap, ShieldCheck, CheckCircle2, ArrowUpRight, Filter, AlertCircle } from 'lucide-react';
+import GlassSelect from '../components/GlassSelect';
 
 const ResumeSuggestions = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -120,16 +121,16 @@ const ResumeSuggestions = () => {
 
         <div className="flex flex-col sm:flex-row items-center gap-6 w-full lg:w-auto">
           <div className="relative w-full sm:w-64">
-             <select 
+             <GlassSelect 
               value={jobId || ''}
-              onChange={(e) => fetchSuggestions(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs font-black uppercase tracking-widest text-white appearance-none cursor-pointer hover:border-primary transition-colors outline-none"
-            >
-              <option value="" disabled>Select Target Job</option>
-              {allJobs.map(job => (
-                <option key={job.id} value={job.id} className="bg-dark">{job.title} @ {job.company}</option>
-              ))}
-            </select>
+              onChange={(val) => fetchSuggestions(val)}
+              placeholder="Select Target Job"
+              options={allJobs.map(job => ({
+                value: String(job.id),
+                label: `${job.title} @ ${job.company}`,
+                colorClass: 'text-white'
+              }))}
+            />
           </div>
 
           {data && (
